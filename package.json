@@ -1,0 +1,32 @@
+{
+  "name": "azure-ad-token-validator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevFacto/azure-ad-token-validator.git"
+  },
+  "keywords": [],
+  "author": "DevFacto",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DevFacto/azure-ad-token-validator/issues"
+  },
+  "homepage": "https://github.com/DevFacto/azure-ad-token-validator#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8",
+    "typescript": "^4.6.4"
+  }
+}

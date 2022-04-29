@@ -1,0 +1,1 @@
+export { AzureAdTokenValidator } from "./AzureAdTokenValidator";
