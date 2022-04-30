@@ -5,6 +5,7 @@ import {
   JwtPayload,
   verify,
   JsonWebTokenError,
+  JwtHeader,
 } from "jsonwebtoken";
 import SimpleCache from "./SimpleCache";
 import {
@@ -23,9 +24,52 @@ export interface AzureAdTokenValidationOptions {
   validIssuers?: string[];
 }
 
+type AzureAdTokenHeader = Omit<
+  JwtHeader,
+  "cty" | "crit" | "jku" | "x5u" | "x5c"
+>;
+
+type AzureAdTokenPayload =
+  // aud
+  // iss
+  // iat : issued at
+  // nbf : not before
+  // exp : expiry
+  // sub : user
+  // jti
+  Omit<JwtPayload, "jti"> & {
+    idp?: string;
+    aio?: string;
+    acr?: "0" | "1";
+    amr?: string[];
+    appid?: string; // v1.0 only
+    azp?: string; // v2.0 replacement for appid
+    appidacr?: "0" | "1" | "2";
+    azpacr?: "0" | "1" | "2";
+    preferred_username?: string; // v2.0 only
+    name?: string;
+    scp?: string;
+    roles?: string[];
+    wids?: string[];
+    groups?: string[];
+    hasgroups?: boolean;
+    oid?: string;
+    tid?: string; // tenant id
+    unique_name?: string; // v1.0 only
+    uti?: string;
+    rh?: string;
+    ver?: "1.0" | "2.0";
+  };
+
+interface AzureAdToken {
+  header: AzureAdTokenHeader;
+  payload: AzureAdTokenPayload;
+  signature: string;
+}
+
 export interface AzureAdTokenValidationResult {
   accessToken: string;
-  decodedAccessToken: Jwt | null;
+  decodedAccessToken: AzureAdToken | null;
   isValid: boolean;
   validationMessage?: string;
 }
@@ -40,7 +84,6 @@ interface AzureAdKeyValue {
   x5t: string;
   x5c: string[];
 }
-
 const cache = new SimpleCache<AzureAdKeyValue>();
 
 export class AzureAdTokenValidator {
@@ -94,7 +137,11 @@ export class AzureAdTokenValidator {
       return result;
     }
 
-    result.decodedAccessToken = decodedAccessToken;
+    result.decodedAccessToken = {
+      header: decodedAccessToken.header as AzureAdTokenHeader,
+      payload: decodedAccessToken.payload as AzureAdTokenPayload,
+      signature: decodedAccessToken.signature,
+    };
 
     const publicKey = await this.getPublicKey(decodedAccessToken);
 
@@ -150,10 +197,13 @@ export class AzureAdTokenValidator {
       return cachedKey;
     }
 
+    // azp in v2.0 and appid in v1.0
+    const appId = (payload as JwtPayload).azp || (payload as JwtPayload).appid;
+
     try {
       const { data } = await axios.get<{
         keys: AzureAdKeyValue[];
-      }>(`${this.metadata?.jwks_uri}?appid=${(payload as JwtPayload).appid}`);
+      }>(`${this.metadata?.jwks_uri}?appid=${appId}`);
 
       // Cache known keys so that we aren't spamming the discovery endpoints
       for (const publicKey of data.keys) {
