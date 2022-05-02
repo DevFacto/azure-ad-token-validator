@@ -1,4 +1,4 @@
-import { SimpleValidationRule, validateRules } from "./SimpleValidator";
+import { SimpleValidationRule, validateRules } from "../src/SimpleValidator";
 
 describe("When single rule", () => {
   describe("and not valid", () => {

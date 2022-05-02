@@ -1,5 +1,5 @@
-import SimpleCache from "./SimpleCache";
-import { SimpleValidationRule, validateRules } from "./SimpleValidator";
+import SimpleCache from "../src/SimpleCache";
+import { SimpleValidationRule, validateRules } from "../src/SimpleValidator";
 
 describe("After setItem", () => {
   const simpleCache = new SimpleCache<string>();

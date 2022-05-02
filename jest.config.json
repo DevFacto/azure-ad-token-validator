@@ -1,6 +1,6 @@
 {
   "testEnvironment": "node",
-  "roots": ["<rootDir>/src"],
+  "roots": ["<rootDir>/tests"],
   "transform": {
     "^.+\\.tsx?$": "ts-jest"
   },

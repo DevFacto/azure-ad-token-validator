@@ -77,6 +77,9 @@ export interface AzureAdTokenValidationResult {
 interface AzureAdOpenIdConnectMetadataDocument {
   jwks_uri: string;
 }
+interface AzureAdOpenIdConnectMetadataKeysDocument {
+  keys: AzureAdKeyValue[];
+}
 
 interface AzureAdKeyValue {
   kid: string;
@@ -153,7 +156,9 @@ export class AzureAdTokenValidator {
       try {
         verify(
           accessToken,
-          `-----BEGIN CERTIFICATE-----\n${publicKey.x5c[0]}\n-----END CERTIFICATE-----`,
+          decodedAccessToken.header.alg.indexOf("RS") === 0
+            ? `-----BEGIN CERTIFICATE-----\n${publicKey.x5c[0]}\n-----END CERTIFICATE-----`
+            : publicKey.x5c[0],
           {
             algorithms: [decodedAccessToken.header.alg as any],
             audience: this.options.audience,
@@ -201,10 +206,10 @@ export class AzureAdTokenValidator {
     const appId = (payload as JwtPayload).azp || (payload as JwtPayload).appid;
 
     try {
-      const { data } = await axios.get<{
-        keys: AzureAdKeyValue[];
-      }>(`${this.metadata?.jwks_uri}?appid=${appId}`);
-
+      const { data } =
+        await axios.get<AzureAdOpenIdConnectMetadataKeysDocument>(
+          `${this.metadata?.jwks_uri}?appid=${appId}`
+        );
       // Cache known keys so that we aren't spamming the discovery endpoints
       for (const publicKey of data.keys) {
         cache.setItem(header.kid, publicKey);
@@ -235,8 +240,10 @@ function validateAdditionalClaims(
       validate: (tokenPayload) =>
         !allowedApplicationIds ||
         allowedApplicationIds.length === 0 ||
-        (!!tokenPayload.appid &&
-          allowedApplicationIds.indexOf(tokenPayload.appid) >= 0),
+        (!!(tokenPayload.azp || tokenPayload.appid) &&
+          allowedApplicationIds.indexOf(
+            tokenPayload.azp || tokenPayload.appid
+          ) >= 0),
       invalidMessage: `authenticated applicationId not in allowed list`,
     },
     {

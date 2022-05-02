@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
     "declaration": true,
     "target": "ES6",
     "module": "commonjs",
@@ -8,6 +9,6 @@
     "strict": true,
     "lib": ["ES2019", "DOM"]
   },
-  "include": ["src"],
+  "include": ["src", "tests/SimpleCache.spec.ts", "tests/SimpleValidator.spec.ts", "tests/AzureAdTokenValidator.spec.ts"],
   "exclude": ["node_modules", "**/__tests__/*", "dist"]
 }
