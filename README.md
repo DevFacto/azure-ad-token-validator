@@ -4,7 +4,7 @@ A simple, lightweight library for validating Azure AD auth tokens. Example use
 case: Node.js API validating auth tokens from client apps in middleware.
 
 ```
-npm install azure-ad-token-verify
+npm install azure-ad-token-validator
 ```
 
 ### Usage
